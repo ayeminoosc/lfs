@@ -10,6 +10,8 @@ ENV MAKEFLAGS="-j 1"
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ="America/New_York"
 ARG LFS_SOURCES="http://www.linuxfromscratch.org"
+# LFS mount point
+ENV LFS=/mnt/lfs
 # install required packages
 RUN apt-get update && apt-get install -y \
     bash                                 \
@@ -37,6 +39,10 @@ RUN apt-get update && apt-get install -y \
     genisoimage                          \
     wget                                 \
  && apt-get -q -y autoremove
+
+# set bash as default shell
+WORKDIR /bin
+RUN rm sh && ln -s bash sh
 
 # create sources directory as writable and sticky
 RUN mkdir -pv     $LFS/sources \
