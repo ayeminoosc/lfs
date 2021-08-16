@@ -1,114 +1,87 @@
-FROM debian:8
+FROM ubuntu:21.10
 
 # image info
-LABEL description="Automated LFS build"
-LABEL version="8.2"
-LABEL maintainer="ilya.builuk@gmail.com"
+LABEL description="Host OS Image for Building LFS System  \n this image contains the work until the end of chapter 4 from LFS 10.1 book"
+LABEL version="LFS-10.1"
+LABEL maintainer="ayeminoosc@gmail.com"
 
-# LFS mount point
-ENV LFS=/mnt/lfs
-
-# Other LFS parameters
-ENV LC_ALL=POSIX
-ENV LFS_TGT=x86_64-lfs-linux-gnu
 ENV PATH=/tools/bin:/bin:/usr/bin:/sbin:/usr/sbin
 ENV MAKEFLAGS="-j 1"
-
-# Defines how toolchain is fetched
-# 0 use LFS wget file
-# 1 use binaries from toolchain folder
-# 2 use github release artifacts
-ENV FETCH_TOOLCHAIN_MODE=1
-
-# set 1 to run tests; running tests takes much more time
-ENV LFS_TEST=0
-
-# set 1 to install documentation; slightly increases final size
-ENV LFS_DOCS=0
-
-# degree of parallelism for compilation
-ENV JOB_COUNT=1
-
-# loop device
-ENV LOOP=/dev/loop0
-
-# inital ram disk size in KB
-# must be in sync with CONFIG_BLK_DEV_RAM_SIZE
-ENV IMAGE_SIZE=900000
-
-# location of initrd tree
-ENV INITRD_TREE=/mnt/lfs
-
-# output image
-ENV IMAGE=isolinux/ramdisk.img
-
-# set bash as default shell
-WORKDIR /bin
-RUN rm sh && ln -s bash sh
-
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ="America/New_York"
+ARG LFS_SOURCES="http://www.linuxfromscratch.org"
 # install required packages
 RUN apt-get update && apt-get install -y \
-    build-essential                      \
+    bash                                 \
+    binutils                             \
     bison                                \
-    file                                 \
+    bzip2                                \
+    coreutils                            \
+    diffutils                            \
+    findutils                            \
     gawk                                 \
+    gcc                                  \
+    g++                                  \
+    glibc-source                         \
+    grep                                 \
+    gzip                                 \
+    m4                                   \
+    make                                 \
+    patch                                \
+    perl                                 \
+    python3                              \
+    sed                                  \
+    tar                                  \
     texinfo                              \
-    wget                                 \
-    sudo                                 \
+    xz-utils                             \
     genisoimage                          \
-    libelf-dev                           \
-    bc                                   \
-    libssl-dev                           \
- && apt-get -q -y autoremove             \
- && rm -rf /var/lib/apt/lists/*
+    wget                                 \
+ && apt-get -q -y autoremove
 
 # create sources directory as writable and sticky
 RUN mkdir -pv     $LFS/sources \
  && chmod -v a+wt $LFS/sources
-WORKDIR $LFS/sources
 
-# create tools directory and symlink
-RUN mkdir -pv $LFS/tools   \
- && ln    -sv $LFS/tools /
+#download sources and check md5sums
+COPY "scripts/download-sources.sh" "$LFS/sources/"
+RUN chmod +x $LFS/sources/download-sources.sh
+RUN $LFS/sources/download-sources.sh
 
-# copy local binaries if present
-COPY ["toolchain/", "$LFS/sources/"]
 
-# copy scripts
-COPY [ "scripts/run-all.sh",       \
-       "scripts/library-check.sh", \
-       "scripts/version-check.sh", \
-       "scripts/prepare/",         \
-       "scripts/build/",           \
-       "scripts/image/",           \
-       "$LFS/tools/" ]
-# copy configuration
-COPY [ "config/kernel.config", "$LFS/tools/" ]
+COPY "scripts/version-check.sh" "$LFS/sources/"
+RUN chmod +x $LFS/sources/version-check.sh
+RUN $LFS/sources/version-check.sh
 
-# check environment
-RUN chmod +x $LFS/tools/*.sh    \
- && sync                        \
- && $LFS/tools/version-check.sh \
- && $LFS/tools/library-check.sh
+#4.2 creating a limited direcotry layout in LFS filesystem
+RUN mkdir -pv $LFS/{bin,etc,lib,sbin,usr,var}
+RUN case $(uname -m) in                 \
+      x86_64) mkdir -pv $LFS/lib64 ;;   \
+    esac
 
+# In order to separate this cross-compiler from the other programs, it will be installed in a special directory.
+RUN mkdir -pv $LFS/tools
+
+#4.3 Adding the LFS User
 # create lfs user with 'lfs' password
 RUN groupadd lfs                                    \
  && useradd -s /bin/bash -g lfs -m -k /dev/null lfs \
  && echo "lfs:lfs" | chpasswd
 RUN adduser lfs sudo
 
-# give lfs user ownership of directories
-RUN chown -v lfs $LFS/tools  \
- && chown -v lfs $LFS/sources
+# Grant lfs full access to all directories under $LFS by making lfs the directory owner:
+RUN chown -v lfs $LFS/{usr,lib,var,etc,bin,sbin,tools}
+RUN case $(uname -m) in                       \
+      x86_64) chown -v lfs $LFS/lib64 ;;      \
+    esac
 
-# avoid sudo password
-RUN echo "lfs ALL = NOPASSWD : ALL" >> /etc/sudoers
-RUN echo 'Defaults env_keep += "LFS LC_ALL LFS_TGT PATH MAKEFLAGS FETCH_TOOLCHAIN_MODE LFS_TEST LFS_DOCS JOB_COUNT LOOP IMAGE_SIZE INITRD_TREE IMAGE"' >> /etc/sudoers
+# If a separate working directory was created as suggested, give user lfs ownership of this directory:
+RUN chown -v lfs $LFS/sources
 
 # login as lfs user
 USER lfs
-COPY [ "config/.bash_profile", "config/.bashrc", "/home/lfs/" ]
-RUN source ~/.bash_profile
 
-# let's the party begin
-ENTRYPOINT [ "/tools/run-all.sh" ]
+#4.4 Setting Up the Environment
+#Copy bash_profile and .bashrc to home directory of the container
+COPY [ "config/.bash_profile", "config/.bashrc", "/home/lfs/" ]
+#Finally, to have the environment fully prepared for building the temporary tools, source the just-created user profile:
+RUN source ~/.bash_profile

@@ -24,8 +24,13 @@ it makes sense. Some deviations are done to make a bootable iso image.
 
 Use the following command:
 
-    docker rm lfs                                       && \
-    docker build --tag lfs:8.2 .                        && \
+    docker build --tag lfs-ubuntu-host:10.1 .    
+        
+or  
+    docker build --build-arg LFS_SOURCES="$LFS_MIRROR_URL" --tag lfs-ubuntu-host:10.1 .                     
+    
+docker build --build-arg LFS_SOURCES="https://lfs-hk.koddos.net" --tag lfs-ubuntu-host:10.1 .                     
+
     sudo docker run -it --privileged --name lfs lfs:8.2 && \
     sudo docker cp lfs:/tmp/lfs.iso .
     # Ramdisk you can find here: /tmp/ramdisk.img

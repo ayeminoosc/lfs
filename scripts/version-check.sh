@@ -15,7 +15,7 @@ if [ -h /usr/bin/yacc ]; then
 elif [ -x /usr/bin/yacc ]; then
   echo yacc is `/usr/bin/yacc --version | head -n1`
 else
-  echo "yacc not found" 
+  echo "yacc not found"
 fi
 
 bzip2 --version 2>&1 < /dev/null | head -n1 | cut -d" " -f1,6-
@@ -28,8 +28,8 @@ if [ -h /usr/bin/awk ]; then
   echo "/usr/bin/awk -> `readlink -f /usr/bin/awk`";
 elif [ -x /usr/bin/awk ]; then
   echo awk is `/usr/bin/awk --version | head -n1`
-else 
-  echo "awk not found" 
+else
+  echo "awk not found"
 fi
 
 gcc --version | head -n1
@@ -42,9 +42,10 @@ m4 --version | head -n1
 make --version | head -n1
 patch --version | head -n1
 echo Perl `perl -V:version`
+python3 --version
 sed --version | head -n1
 tar --version | head -n1
-makeinfo --version | head -n1
+makeinfo --version | head -n1  # texinfo version
 xz --version | head -n1
 
 echo 'int main(){}' > dummy.c && g++ -o dummy dummy.c
