@@ -80,14 +80,11 @@ RUN case $(uname -m) in                       \
       x86_64) chown -v lfs $LFS/lib64 ;;      \
     esac
 
-# If a separate working directory was created as suggested, give user lfs ownership of this directory:
-RUN chown -v lfs $LFS/sources
-
-# login as lfs user
-USER lfs
+RUN mv /bin/*.tar.* $LFS/sources/ && mv /bin/*.patch $LFS/sources/
 
 #4.4 Setting Up the Environment
 #Copy bash_profile and .bashrc to home directory of the container
 COPY [ "config/.bash_profile", "config/.bashrc", "/home/lfs/" ]
+USER lfs
 #Finally, to have the environment fully prepared for building the temporary tools, source the just-created user profile:
 RUN source ~/.bash_profile

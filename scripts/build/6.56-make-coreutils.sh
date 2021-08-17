@@ -6,13 +6,13 @@ echo "Required disk space: 179 MB"
 
 # 6.56. The Coreutils package contains utilities for showing and
 # setting the basic system characteristics.
-tar -xf /sources/coreutils-*.tar.xz -C /tmp/ \
-  && mv /tmp/coreutils-* /tmp/coreutils \
-  && pushd /tmp/coreutils
+tar -xf /sources/coreutils.sh-*.tar.xz -C /tmp/ \
+  && mv /tmp/coreutils.sh-* /tmp/coreutils.sh \
+  && pushd /tmp/coreutils.sh
 
 # The following patch fixes this non-compliance and other
 # internationalization-related bugs.
-patch -Np1 -i /sources/coreutils-8.29-i18n-1.patch
+patch -Np1 -i /sources/coreutils.sh-8.29-i18n-1.patch
 
 # Suppress a test which on some machines can loop forever
 sed -i '/test.lock/s/^/#/' gnulib-tests/gnulib.mk
@@ -60,4 +60,4 @@ mv -v /usr/bin/{head,sleep,nice} /bin
 
 # cleanup
 popd \
-  && rm -rf /tmp/coreutils
+  && rm -rf /tmp/coreutils.sh

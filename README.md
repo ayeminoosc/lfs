@@ -25,6 +25,12 @@ it makes sense. Some deviations are done to make a bootable iso image.
 Use the following command:
 
     docker build --tag lfs-ubuntu-host:10.1 .    
+    docker build --tag ayeminoosc/lfs-ubuntu-host:10.1 . 
+
+    docker build --tag ayeminoosc/lfs-toolchain:10.1 -f toolchain.dockerfile .
+    docker run -it -v /home/ayeminoo/lfs-volume:/mnt/lfs --rm ayeminoosc/lfs-toolchain:10.1 /opt/scripts/5-build-cross-toolchain.sh
+    docker run -it -v /home/ayeminoo/lfs-volume:/mnt/lfs --rm ayeminoosc/lfs-toolchain:10.1 /opt/scripts/6-build-temporary-tools.sh
+    docker run -it -v /home/ayeminoo/lfs-volume:/mnt/lfs --rm ayeminoosc/lfs-toolchain:10.1 /opt/scripts/7-build-additional-tools.sh
         
 or  
     docker build --build-arg LFS_SOURCES="$LFS_MIRROR_URL" --tag lfs-ubuntu-host:10.1 .                     

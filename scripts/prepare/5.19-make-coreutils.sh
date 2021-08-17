@@ -10,9 +10,9 @@ echo "Required disk space: 139 MB"
 # NOTE: has failed tests
 # NOTE: has workaround for deletion directories with long name
 
-tar -xf coreutils-*.tar.xz -C /tmp/ \
-  && mv /tmp/coreutils-* /tmp/coreutils \
-  && pushd /tmp/coreutils
+tar -xf coreutils.sh-*.tar.xz -C /tmp/ \
+  && mv /tmp/coreutils.sh-* /tmp/coreutils.sh \
+  && pushd /tmp/coreutils.sh
 
 # Prepare Coreutils for compilation:
 ./configure --prefix=/tools --enable-install-program=hostname
@@ -28,4 +28,4 @@ make install
 
 # Cleanup
 popd \
-  && rm -rf /tmp/coreutils
+  && rm -rf /tmp/coreutils.sh
