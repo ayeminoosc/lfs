@@ -59,7 +59,7 @@ RUN chmod +x $LFS/sources/version-check.sh
 RUN $LFS/sources/version-check.sh
 
 #4.2 creating a limited direcotry layout in LFS filesystem
-RUN mkdir -pv $LFS/{bin,etc,lib,sbin,usr,var}
+RUN mkdir -pv $LFS/{bin,etc,lib,sbin,usr,var}sudo
 RUN case $(uname -m) in                 \
       x86_64) mkdir -pv $LFS/lib64 ;;   \
     esac
